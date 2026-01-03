@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # MongoDB 数据库
+  mongodb:
+    image: mongo:latest
+    container_name: chat-mongodb
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=chat_password_123
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  # 后端服务器
+  server:
+    build: ./apps/server
+    container_name: chat-server
+    restart: always
+    depends_on:
+      - mongodb
+    environment:
+      - MONGODB_URI=mongodb://admin:chat_password_123@mongodb:27017/chat-system?authSource=admin
+      - JWT_SECRET=your_jwt_secret_key_change_me
+    volumes:
+      - ./apps/server/uploads:/app/uploads
+
+  # 前端 Web 服务器
+  web:
+    build: ./apps/web
+    container_name: chat-web
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+
+volumes:
+  mongo-data:
+
